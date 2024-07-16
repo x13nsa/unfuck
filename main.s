@@ -65,10 +65,14 @@ _start:
 	movl	$0, %edx
 	movl	$8, %eax
 	syscall
+	movl	%edi, %ebx
 	# Making space for the file's content.
 	# mmap(NULL, r15, MAP_READ | MAP_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0)
 	movq	$0, %rdi
+
+	# Add null byte
 	movq	%r15, %rsi
+
 	movl	$3, %edx
 	movl	$34, %r10d
 	movl	$-1, %r8d
@@ -78,7 +82,23 @@ _start:
 	cmpq	$-1, %rax
 	je	.display_bad_alloc
 
+	# TODO: Apply memset
 	movq	%rax, -12(%rbp)
+
+	# Reading file's content.
+	# open(fd, buf, r15)
+	movl	%ebx, %edi
+	movq	-12(%rbp), %rsi
+	movq	%r15, %rdx
+	movq	$0, %rax
+	syscall
+
+	movq	-12(%rbp), %rsi
+	movq	%r15, %rdx
+	movq	$1, %rax
+	movq	$1, %rdi
+	syscall
+
 	EXIT_	$0
 
 .display_usage:
