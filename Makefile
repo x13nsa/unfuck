@@ -1,4 +1,4 @@
-objs = main.o
+objs = main.o memset.o
 exec = unfuck
 
 all: $(exec)
