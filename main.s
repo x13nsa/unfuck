@@ -2,6 +2,8 @@
 	.max_num_tokens:	.quad	2048
 	.max_num_loops:		.quad	1024
 	.token_sz:		.quad	  20
+	
+	.token_info:		.string "(%d:%d):\t\t%c\t\t[%d]\n"
 
 .section	.bss
 	# struct Token {
@@ -28,25 +30,25 @@
 #                 ||----w |
 #                 ||     ||
 is_it_code:
-	movl	$0, %eax
-	cmpb	$'.', %dil
-	je	.is_it_no
-	cmpb	$',', %dil
-	je	.is_it_no
-	cmpb	$'[', %dil
-	je	.is_it_no
-	cmpb	$']', %dil
-	je	.is_it_no
-	cmpb	$'<', %dil
-	je	.is_it_no
-	cmpb	$'>', %dil
-	je	.is_it_no
-	cmpb	$'+', %dil
-	je	.is_it_no
-	cmpb	$'-', %dil
-	je	.is_it_no
 	movl	$1, %eax
-.is_it_no:
+	cmpb	$'.', %dil
+	je	.is_it_end
+	cmpb	$',', %dil
+	je	.is_it_end
+	cmpb	$'[', %dil
+	je	.is_it_end
+	cmpb	$']', %dil
+	je	.is_it_end
+	cmpb	$'<', %dil
+	je	.is_it_end
+	cmpb	$'>', %dil
+	je	.is_it_end
+	cmpb	$'+', %dil
+	je	.is_it_end
+	cmpb	$'-', %dil
+	je	.is_it_end
+	movl	$0, %eax
+.is_it_end:
 	ret
 
 #  ___________________________________
@@ -58,8 +60,36 @@ is_it_code:
 #                 ||----w |
 #                 ||     ||
 # args: rdi (context); rsi (number line ptr); rdx (line offset ptr)
+# regs: rdi, rsi, rdx, rax, rbx, r8, r9
 how_many:
-
+	movq	%rdi, %r8
+	movl	$1, %r9d
+	movzbl	(%r8), %ebx
+	incq	%r8
+.how_many_loop:
+	incl	(%rdx)
+	movzbl	(%r8), %edi
+	call	is_it_code
+	testl	%eax, %eax
+	jz	.how_many_non_token
+	cmpl	%edi, %ebx
+	jne	.how_many_fini
+	incl	%r9d
+	jmp	.how_many_continue
+.how_many_non_token:
+	testl	%edi, %edi
+	jz	.how_many_fini
+	cmpb	$'\n', %dil
+	jne	.how_many_continue
+	incl	(%rsi)
+	movl	$0, (%rdx)
+.how_many_continue:
+	incq	%r8
+	jmp	.how_many_loop
+.how_many_fini:
+	movl	%r9d, %eax
+	movq	%r8, %r15
+	ret
 
 _start:
 	popq	%rax
@@ -79,7 +109,7 @@ _start:
 	#  -44(%rbp) : current loop indx.	[long]			#
 	subq	$64, %rsp						#
 	movl	$1, -24(%rbp)						#
-	movl	$0, -28(%rbp)						#
+	movl	$1, -28(%rbp)						#
 	movq	$4, -36(%rbp)						#
 	movq	$0, -44(%rbp)						#
 	# -*----------------------------- Making sure file is OK! ------*
@@ -135,14 +165,13 @@ _start:
 	syscall								#
 	# -*----------------------------- Lexing -----------------------*
 	movq	-20(%rbp), %r15						#
-
 .lexer_pick:
 	movzbl	(%r15), %edi
 	testl	%edi, %edi
 	jz	.lexer_end
 	call	is_it_code
 	testl	%eax, %eax
-	jnz	.lex_non_code
+	jz	.lex_non_code
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# Checking aint overflow
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
@@ -171,7 +200,7 @@ _start:
 	je	.lex_opening
 	cmpb	$']', %dil
 	je	.lex_closing
-
+	movl	%eax, 16(%r14)
 	jmp	.lex_continue
 
 .lex_opening:
@@ -186,9 +215,10 @@ _start:
 
 .lex_new_line:
 	incl	-24(%rbp)
-	movl	$0, -28(%rbp)
+	movl	$1, -28(%rbp)
 
 .lex_continue:
+	
 	incq	%r15
 	jmp	.lexer_pick
 
