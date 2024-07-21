@@ -88,6 +88,7 @@ how_many:
 	jmp	.how_many_loop
 .how_many_fini:
 	movl	%r9d, %eax
+	decq	%r8
 	movq	%r8, %r15
 	ret
 
@@ -200,8 +201,14 @@ _start:
 	je	.lex_opening
 	cmpb	$']', %dil
 	je	.lex_closing
+
+	movq	%r15, %rdi
+	leaq	-24(%rbp), %rsi
+	leaq	-28(%rbp), %rdx
+	call	how_many
+
 	movl	%eax, 16(%r14)
-	jmp	.lex_continue
+	jmp	.lex_got_token		# CHANGE
 
 .lex_opening:
 .lex_closing:
@@ -216,9 +223,31 @@ _start:
 .lex_new_line:
 	incl	-24(%rbp)
 	movl	$1, -28(%rbp)
+	jmp	.lex_continue
+
+.lex_got_token:
+	movl	16(%r14), %eax
+	cltq
+	pushq	%rax
+	movq	0(%r14), %rax
+	movzbl	(%rax), %eax
+	cltq
+	pushq	%rax
+	movl	12(%r14), %eax
+	cltq
+	pushq	%rax
+	movl	8(%r14), %eax
+	cltq
+	pushq	%rax
+	movl	$1, %edi
+	leaq	.token_info(%rip), %rsi
+	call	fprintf_
+	popq	%rax
+	popq	%rax
+	popq	%rax
+	popq	%rax
 
 .lex_continue:
-	
 	incq	%r15
 	jmp	.lexer_pick
 
