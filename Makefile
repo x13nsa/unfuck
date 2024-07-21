@@ -1,4 +1,4 @@
-objs = main.o
+objs = main.o error.o
 exec = unfuck
 
 all: $(exec)
