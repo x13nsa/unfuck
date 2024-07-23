@@ -1,5 +1,5 @@
 .section	.bss
-	.memory:	.zero	30000
+	.memory:	.zero	90000
 
 .section	.text
 .globl		interpret
