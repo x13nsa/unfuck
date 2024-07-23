@@ -33,6 +33,7 @@ interpret:
 	leaq	tokens(%rip), %r14
 	addq	%rax, %r14
 	movq	(%r14), %rax
+	movl	$0, %r8d
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# what to do?
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
@@ -70,17 +71,31 @@ interpret:
 	addq	%rax, %r15
 	jmp	.int_continue
 .int_out:
+	movl	16(%r14), %eax
+	cmpl	%eax, %r8d
+	je	.int_continue
 	movq	$1, %rax
 	movq	$1, %rdi
 	movq	%r15, %rsi
 	movq	$1, %rdx
 	syscall
-	EXIT_	$0
-.int_in:
+	incl	%r8d
+	jmp	.int_out
+.int_in:	
+	cmpl	16(%r14), %r8d
+	je	.int_continue
+	movq	$0, %rax
+	movq	$1, %rdi
+	movq	%r15, %rsi
+	movq	$1, %rdx
+	syscall
+	incl	%r8d
+	jmp	.int_in
 
 
 
 .int_continue:
+	movl	$0, %r8d
 	incl	-8(%rbp)
 	jmp	.int_eat
 
