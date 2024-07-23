@@ -194,6 +194,7 @@ _start:
 	movl	%eax, 8(%r14)
 	movl	-28(%rbp), %eax
 	movl	%eax, 12(%r14)
+	incl	-28(%rbp)
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# [ and ] are special tokens since they must not to be accumulated
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
@@ -253,10 +254,9 @@ _start:
 	jmp	.lex_got_token
 
 .lex_non_code:
-	cmpb	$'\n', %dil
-	je	.lex_new_line
 	incl	-28(%rbp)
-	jmp	.lex_continue
+	cmpb	$'\n', %dil
+	jne	.lex_continue
 
 .lex_new_line:
 	incl	-24(%rbp)
