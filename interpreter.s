@@ -6,6 +6,16 @@
 
 .include	"macros.inc"
 
+
+.macro	SET_NEW_MEM_POS
+	incl	%ebx
+	movl	%ebx, -8(%rbp)
+	movl	%ebx, %eax
+	cltq
+	leaq	.memory(%rip), %r15
+	addq	%rax, %r15
+.endm
+
 interpret:
 	pushq	%rbp
 	movq	%rsp, %rbp
@@ -26,13 +36,13 @@ interpret:
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	movl	-8(%rbp), %eax
 	cmpl	-4(%rbp), %eax
-	je	.int_fini
+	jge	.int_fini
 	cltq
 	movq	tokens_sz(%rip), %rbx
 	mulq	%rbx
 	leaq	tokens(%rip), %r14
 	addq	%rax, %r14
-	movq	(%r14), %rax
+	movq	0(%r14), %rax
 	movl	$0, %r8d
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# what to do?
@@ -50,15 +60,22 @@ interpret:
 	je	.int_out
 	cmpb	$',', %al
 	je	.int_in
-
-
+	cmpb	$'[', %al
+	je	.int_loop_open
+	cmpb	$']', %al
+	je	.int_loop_close
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# the program will never get here but we will take care of
+	# everything ;)
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	jmp	E_UNKNOWN
 .int_inc:
 	movl	16(%r14), %eax
 	addb	%al, (%r15)
 	jmp	.int_continue
 .int_dec:
 	movl	16(%r14), %eax
-	addb	%al, (%r15)
+	subb	%al, (%r15)
 	jmp	.int_continue
 .int_prev:
 	movl	16(%r14), %eax
@@ -91,14 +108,26 @@ interpret:
 	syscall
 	incl	%r8d
 	jmp	.int_in
-
-
-
+.int_loop_open:
+	movl	16(%r14), %eax
+	cmpl	$-1, %eax
+	je	E_UNMATCHED
+	movb	(%r15), %bl
+	cmpb	$0, %bl
+	jne	.int_continue
+	movl	%eax, -8(%rbp)
+	jmp	.int_eat
+.int_loop_close:
+	movb	(%r15), %bl
+	cmpb	$0, %bl
+	je	.int_continue
+	movl	16(%r14), %eax	
+	movl	%eax, -8(%rbp)
 .int_continue:
-	movl	$0, %r8d
 	incl	-8(%rbp)
 	jmp	.int_eat
 
 .int_fini:
+	EXIT_	$96
 	leave
 	ret

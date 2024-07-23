@@ -17,6 +17,9 @@
 	.unmatched_pair_msg:	.string "\terror: unmatched pair\n"
 	.unmatched_pair_len:	.long	23
 
+	.unknown_wtf_msg:	.string "\terror: you are not suppoed to be here\n"
+	.unknown_wtf_len:	.long	39
+
 	.err_fmt:		.string "\t(%d:%d): %c causes the error.\n"
 
 .section	.text
@@ -28,6 +31,7 @@
 .globl		E_TOKEN_OVERFLOW
 .globl		E_LOOP_OVERFLOW
 .globl		E_UNMATCHED
+.globl		E_UNKNOWN
 
 E_USAGE:
 	PRINT_	$2, .usage_len(%rip), .usage_msg(%rip)
@@ -50,6 +54,9 @@ E_LOOP_OVERFLOW:
 E_UNMATCHED:
 	PRINT_	$2, .unmatched_pair_len(%rip), .unmatched_pair_msg(%rip)
 	call	.formated_error
+	EXIT_	$5
+E_UNKNOWN:
+	PRINT_	$2, .unknown_wtf_len(%rip), .unknown_wtf_msg(%rip)
 	EXIT_	$5
 
 .formated_error:
