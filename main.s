@@ -2,7 +2,7 @@
 	.max_num_tokens:	.quad	2048
 	.max_num_loops:		.quad	1024
 	.token_sz:		.quad	  20
-	
+
 	.token_info:		.string "(%d:%d):\t\t%c\t\t[%d]\n"
 
 .section	.bss
@@ -61,7 +61,7 @@ is_it_code:
 #                 ||     ||
 # args: rdi (context); rsi (number line ptr); rdx (line offset ptr)
 # regs: rdi, rsi, rdx, rax, rbx, r8, r9
-how_many:
+how_many_:
 	movq	%rdi, %r8
 	movl	$1, %r9d
 	movzbl	(%r8), %ebx
@@ -111,7 +111,7 @@ _start:
 	subq	$64, %rsp						#
 	movl	$1, -24(%rbp)						#
 	movl	$1, -28(%rbp)						#
-	movq	$4, -36(%rbp)						#
+	movq	$0, -36(%rbp)						#
 	movq	$0, -44(%rbp)						#
 	# -*----------------------------- Making sure file is OK! ------*
 	movq	%rax, %rdi						#
@@ -177,8 +177,8 @@ _start:
 	# Checking aint overflow
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	movq	-36(%rbp), %rax
-	cmpq	%rax, .max_num_tokens(%rip)
-	je	E_TOKEN_OVERFLOW	
+	cmpq	.max_num_tokens(%rip), %rax
+	je	E_TOKEN_OVERFLOW
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# Current token will be stored into r14
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
@@ -201,16 +201,28 @@ _start:
 	je	.lex_opening
 	cmpb	$']', %dil
 	je	.lex_closing
-
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# Numer of times the token appears in a row
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	movq	%r15, %rdi
 	leaq	-24(%rbp), %rsi
 	leaq	-28(%rbp), %rdx
-	call	how_many
-
+	call	how_many_
 	movl	%eax, 16(%r14)
-	jmp	.lex_got_token		# CHANGE
+	jmp	.lex_got_token
 
 .lex_opening:
+	movq	-44(%rbp), %rax
+	cmpq	.max_num_loops(%rip), %rax
+	je	E_LOOP_OVERFLOW
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# the mark for the opening token `[' will be -1 as long as its
+	# pair `]' is not found.
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	movl	$-1, 16(%r14)
+	incq	-44(%rbp)
+	jmp	.lex_got_token
+
 .lex_closing:
 	EXIT_	$96
 
@@ -246,6 +258,7 @@ _start:
 	popq	%rax
 	popq	%rax
 	popq	%rax
+	incq	-36(%rbp)
 
 .lex_continue:
 	incq	%r15

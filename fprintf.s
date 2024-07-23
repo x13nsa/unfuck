@@ -53,14 +53,14 @@
 
 	.err_overflow_msg:	.string "fprintf_: fmt overflow.\n"
 	.err_overflow_len:	.long	23
+	
+	.tester:		.string "neg: %d %d %d %d\n"
 
 	.buffer_cap:	.quad	2048
 	.numbuf_cap:	.quad	32
 
 .section	.text
 .globl		fprintf_
-.globl		_start
-
 
 .macro	EXIT_, a
 	movq	\a, %rdi
@@ -81,6 +81,21 @@
 	cmpq	%rcx, .buffer_cap(%rip)
 	je	.fprintf_err_overflow
 .endm
+
+.macro	BYTE_WRITTEN
+	incq	-28(%rbp)
+	incq	-36(%rbp)
+.endm
+
+_start:
+	movl	$1, %edi
+	leaq	.tester(%rip), %rsi
+	pushq	$-39
+	pushq	$0
+	pushq	$0
+	pushq	$-1
+	call	fprintf_
+	EXIT_	$0	
 
 # arguments:	fd (edi) ; fmt (rsi) ; arguments (pushed into the stack)
 # return:	number of bytes written.
@@ -118,8 +133,7 @@ fprintf_:
 	# prepare the next byte in the buffer.
 	# increase the number of bytes stored into the buffer.
 	incq	-20(%rbp)
-	incq	-28(%rbp)
-	incq	-36(%rbp)
+	BYTE_WRITTEN
 	jmp	.fprintf_loop
 .fprintf_fmt_found:
 	# getting the format.
@@ -151,9 +165,9 @@ fprintf_:
 	# +                                   <----- $  * + numbuf
 	# +------------------------------------------|--v-+
 	#                          start from here --+  nullbyte
-	# therefore 454 would look like:
+	# therefore 452 would look like:
 	# +-----------------------------------------------+
-	# +                                !  4  5  4  *  + numbuf
+	# +                                !  2  5  4  *  + numbuf
 	# +--------------------------------/--v-----------+
 	#                       not used...  rsi is here!!
 	leaq	.numbuf(%rip), %rsi
@@ -162,10 +176,18 @@ fprintf_:
 	# -*-
 	movq	%rbx, %rax
 	cmpq	$0, %rax
-	jge	.fprintf_fmt_num_get
+	jg	.fprintf_fmt_num_get
+	cmpq	$0, %rax
+	jl	.fprintf_fmt_num_neg
 	movq	-28(%rbp), %rax
-	movb	$'-', (%rax)
-	incq	-36(%rbp)
+	movb	$'0', (%rax)
+	BYTE_WRITTEN
+	jmp	.fprintf_fmt_done
+.fprintf_fmt_num_neg:
+	movq	-28(%rbp), %rbx
+	movb	$'-', (%rbx)
+	negq	%rax
+	BYTE_WRITTEN
 .fprintf_fmt_num_get:
 	testq	%rax, %rax
 	jz	.fprintf_fmt_num_end

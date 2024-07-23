@@ -11,6 +11,9 @@
 	.token_overflow_msg:	.string "\terror: token overflow\n"
 	.token_overflow_len:	.long	23
 
+	.loop_overflow_msg:	.string "\terror: loop overflow\n"
+	.loop_overflow_len:	.long	22
+
 .section	.text
 .include	"macros.inc"
 
@@ -18,6 +21,7 @@
 .globl		E_FILE_ISSUES
 .globl		E_MEM_ISSUES
 .globl		E_TOKEN_OVERFLOW
+.globl		E_LOOP_OVERFLOW
 
 E_USAGE:
 	PRINT_	$2, .usage_len(%rip), .usage_msg(%rip)
@@ -34,3 +38,6 @@ E_MEM_ISSUES:
 E_TOKEN_OVERFLOW:
 	PRINT_	$2, .token_overflow_len(%rip), .token_overflow_msg(%rip)
 	EXIT_	$3
+E_LOOP_OVERFLOW:
+	PRINT_	$2, .loop_overflow_len(%rip), .loop_overflow_msg(%rip)
+	EXIT_	$4
