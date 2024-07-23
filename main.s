@@ -203,7 +203,7 @@ _start:
 	cmpb	$']', %dil
 	je	.lex_closing
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
-	# Numer of times the token appears in a row
+	# Number of times the token appears in a row
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	movq	%r15, %rdi
 	leaq	-24(%rbp), %rsi
@@ -233,7 +233,7 @@ _start:
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	decq	%rcx	
 	leaq	.loopids(%rip), %rax
-	movq	(%rax, %rcx, 4), %rax
+	movl	(%rax, %rcx, 4), %eax
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# Setting the jump to ] token.
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
@@ -241,6 +241,7 @@ _start:
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# getting the last [ token	(rbx)
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	cltq
 	movq	.token_sz(%rip), %rbx
 	mulq	%rbx
 	leaq	.tokens(%rip), %rbx
@@ -264,6 +265,24 @@ _start:
 	jmp	.lex_continue
 
 .lex_got_token:
+	incq	-36(%rbp)
+
+.lex_continue:
+	incq	%r15
+	jmp	.lexer_pick
+
+.lexer_end:
+	movq	$0, %r8
+.aaa:
+	cmpq	-36(%rbp), %r8
+	je	.bbb
+
+	movq	%r8, %rax
+	movq	.token_sz(%rip), %rbx
+	mulq	%rbx
+	leaq	.tokens(%rip), %r14
+	addq	%rax, %r14
+
 	movl	16(%r14), %eax
 	cltq
 	pushq	%rax
@@ -284,11 +303,9 @@ _start:
 	popq	%rax
 	popq	%rax
 	popq	%rax
-	incq	-36(%rbp)
 
-.lex_continue:
-	incq	%r15
-	jmp	.lexer_pick
+	incq	%r8
+	jmp	.aaa
 
-.lexer_end:
+.bbb:
 	EXIT_	$96

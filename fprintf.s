@@ -87,16 +87,6 @@
 	incq	-36(%rbp)
 .endm
 
-_start:
-	movl	$1, %edi
-	leaq	.tester(%rip), %rsi
-	pushq	$-39
-	pushq	$0
-	pushq	$0
-	pushq	$-1
-	call	fprintf_
-	EXIT_	$0	
-
 # arguments:	fd (edi) ; fmt (rsi) ; arguments (pushed into the stack)
 # return:	number of bytes written.
 # regs:		rax, rdi, rsi, rcx, rbx
