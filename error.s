@@ -14,6 +14,11 @@
 	.loop_overflow_msg:	.string "\terror: loop overflow\n"
 	.loop_overflow_len:	.long	22
 
+	.unmatched_pair_msg:	.string "\terror: unmatched pair\n"
+	.unmatched_pair_len:	.long	23
+
+	.err_fmt:		.string "\t(%d:%d): %c causes the error.\n"
+
 .section	.text
 .include	"macros.inc"
 
@@ -22,6 +27,7 @@
 .globl		E_MEM_ISSUES
 .globl		E_TOKEN_OVERFLOW
 .globl		E_LOOP_OVERFLOW
+.globl		E_UNMATCHED
 
 E_USAGE:
 	PRINT_	$2, .usage_len(%rip), .usage_msg(%rip)
@@ -41,3 +47,29 @@ E_TOKEN_OVERFLOW:
 E_LOOP_OVERFLOW:
 	PRINT_	$2, .loop_overflow_len(%rip), .loop_overflow_msg(%rip)
 	EXIT_	$4
+E_UNMATCHED:
+	PRINT_	$2, .unmatched_pair_len(%rip), .unmatched_pair_msg(%rip)
+	call	.formated_error
+	EXIT_	$5
+
+.formated_error:
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# r14 saves a pointer to the token
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	movq	0(%r14), %rax
+	movzbl	(%rax), %eax
+	cltq
+	pushq	%rax
+	movl	12(%r14), %eax
+	cltq
+	pushq	%rax
+	movl	8(%r14), %eax
+	cltq
+	pushq	%rax
+	movl	$2, %edi
+	leaq	.err_fmt(%rip), %rsi
+	call	fprintf_
+	popq	%rax
+	popq	%rax
+	popq	%rax
+	ret

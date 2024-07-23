@@ -212,19 +212,45 @@ _start:
 	jmp	.lex_got_token
 
 .lex_opening:
-	movq	-44(%rbp), %rax
-	cmpq	.max_num_loops(%rip), %rax
+	movq	-44(%rbp), %rcx
+	cmpq	.max_num_loops(%rip), %rcx
 	je	E_LOOP_OVERFLOW
-	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
-	# the mark for the opening token `[' will be -1 as long as its
-	# pair `]' is not found.
-	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	movl	$-1, 16(%r14)
+	movl	-36(%rbp), %ebx
+	leaq	.loopids(%rip), %rax
+	leaq	(%rax, %rcx, 4), %rax
+	movl	%ebx, (%rax)
 	incq	-44(%rbp)
 	jmp	.lex_got_token
 
 .lex_closing:
-	EXIT_	$96
+	movq	-44(%rbp), %rcx
+	cmpq	$0, %rcx
+	je	E_UNMATCHED
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# getting the index of the last [	(rax)
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	decq	%rcx	
+	leaq	.loopids(%rip), %rax
+	movq	(%rax, %rcx, 4), %rax
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# Setting the jump to ] token.
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	movl	%eax, 16(%r14)
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# getting the last [ token	(rbx)
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	movq	.token_sz(%rip), %rbx
+	mulq	%rbx
+	leaq	.tokens(%rip), %rbx
+	addq	%rax, %rbx
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	# linking both pairs [ -> ] and [ <- ]
+	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
+	movq	-36(%rbp), %rax
+	movl	%eax, 16(%rbx)
+	decq	-44(%rbp)
+	jmp	.lex_got_token
 
 .lex_non_code:
 	cmpb	$'\n', %dil
