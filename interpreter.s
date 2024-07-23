@@ -4,7 +4,7 @@
 #      .-.   `|O, O  ||		art by: TBH'99
 #      | |    (/    -)\		coded by: x13nsa
 #      | |    |`-'` |./		date: Jul 23 2015
-#   __/  |    | _/  |		
+#   __/  |    | _/  |
 #  (___) \.  _.\__. `\___
 #  (___)  )\/  \    _/   ~\.
 #  (___) . \   `--  _      |
@@ -111,7 +111,7 @@ interpret:
 	syscall
 	incl	%r8d
 	jmp	.int_out
-.int_in:	
+.int_in:
 	cmpl	16(%r14), %r8d
 	je	.int_continue
 	movq	$0, %rax
@@ -134,13 +134,11 @@ interpret:
 	movb	(%r15), %bl
 	cmpb	$0, %bl
 	je	.int_continue
-	movl	16(%r14), %eax	
+	movl	16(%r14), %eax
 	movl	%eax, -8(%rbp)
 .int_continue:
 	incl	-8(%rbp)
 	jmp	.int_eat
-
 .int_fini:
-	EXIT_	$96
 	leave
 	ret
