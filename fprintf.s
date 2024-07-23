@@ -1,3 +1,17 @@
+#               ____
+#             /____ `\
+#            ||_  _`\ \		Brainfuck interpreter
+#      .-.   `|O, O  ||		art by: TBH'99
+#      | |    (/    -)\		coded by: x13nsa
+#      | |    |`-'` |./		date: Jul 23 2015
+#   __/  |    | _/  |		
+#  (___) \.  _.\__. `\___
+#  (___)  )\/  \    _/   ~\.
+#  (___) . \   `--  _      |
+#   (__)-    ,/        (   |
+#        `--~|         |   |	printf yessssssssss mon amour
+#            |         |   |
+
 # ffprintf for x86
 # this a pretty simple implementation of the `fprintf' function found
 # in the C programming language, it goes something like fprintf_(fd, fmt, ...)

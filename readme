@@ -1,0 +1,29 @@
+		       ____
+		     /____ `\
+		    ||_  _`\ \		Brainfuck interpreter
+	      .-.   `|O, O  ||		art by: TBH'99
+	      | |    (/    -)\		coded by: x13nsa
+	      | |    |`-'` |./		date: Jul 23 2015
+	   __/  |    | _/  |		
+	  (___) \.  _.\__. `\___
+	  (___)  )\/  \    _/   ~\.
+	  (___) . \   `--  _      |
+	   (__)-    ,/        (   |
+		`--~|         |   |	Readme
+		    |         |   |
+
+	This is the FASTEST brainfuck interpreter you will EVER see! it tries
+	not to use the stack too much and only use registers for faster access
+	to values! increible no?
+
+	It is pretty simple, the first step is to make use the file exists and
+	has permissions to read, then it will create a space into the heap to
+	allocate there the content of the file, next step is to lex every token
+	into the file (what is not a token is just skipped) and finally it starts
+	to interpret the code YOU WROTEEE hopefully it will be correct!!
+
+	The interpreter was implemented following some of the suggestions given
+	in this page https://brainfuck.org/ (i also took some programs) to test
+	the interpreter from there.
+
+	happy sadness coding in bf!

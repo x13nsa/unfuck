@@ -1,3 +1,16 @@
+#               ____
+#             /____ `\
+#            ||_  _`\ \		Brainfuck interpreter
+#      .-.   `|O, O  ||		art by: TBH'99
+#      | |    (/    -)\		coded by: x13nsa
+#      | |    |`-'` |./		date: Jul 23 2015
+#   __/  |    | _/  |		
+#  (___) \.  _.\__. `\___
+#  (___)  )\/  \    _/   ~\.
+#  (___) . \   `--  _      |
+#   (__)-    ,/        (   |
+#        `--~|         |   |	lexer and initializater
+#            |         |   |
 .section	.rodata
 	.max_num_tokens:	.quad	2048
 	.max_num_loops:		.quad	1024
