@@ -1,4 +1,4 @@
-objs = main.o error.o fprintf.o
+objs = main.o error.o fprintf.o interpreter.o
 exec = unfuck
 
 all: $(exec)

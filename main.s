@@ -1,9 +1,10 @@
 .section	.rodata
 	.max_num_tokens:	.quad	2048
 	.max_num_loops:		.quad	1024
-	.token_sz:		.quad	  20
-
 	.token_info:		.string "(%d:%d):\t\t%c\t\t[%d]\n"
+
+	tokens_sz:		.quad	  20
+	.globl			tokens_sz
 
 .section	.bss
 	# struct Token {
@@ -13,8 +14,10 @@
 	#	int	mark;		16(reg)
 	# } : this is what a token looks like and
 	#     it is 20 bytes long.
-	.tokens:	.zero	2048 * 20
+	tokens:	.zero	2048 * 20
 	.loopids:	.zero	1024 *  4
+
+	.globl		tokens
 
 .section	.text
 .globl		_start
@@ -166,10 +169,11 @@ _start:
 	syscall								#
 	# -*----------------------------- Lexing -----------------------*
 	movq	-20(%rbp), %r15						#
+
 .lexer_pick:
 	movzbl	(%r15), %edi
 	testl	%edi, %edi
-	jz	.lexer_end
+	jz	.start_intp
 	call	is_it_code
 	testl	%eax, %eax
 	jz	.lex_non_code
@@ -182,9 +186,9 @@ _start:
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# Current token will be stored into r14
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
-	movq	.token_sz(%rip), %rbx
+	movq	tokens_sz(%rip), %rbx
 	mulq	%rbx
-	leaq	.tokens(%rip), %r14
+	leaq	tokens(%rip), %r14
 	addq	%rax, %r14
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# Setting values ya know
@@ -242,9 +246,9 @@ _start:
 	# getting the last [ token	(rbx)
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	cltq
-	movq	.token_sz(%rip), %rbx
+	movq	tokens_sz(%rip), %rbx
 	mulq	%rbx
-	leaq	.tokens(%rip), %rbx
+	leaq	tokens(%rip), %rbx
 	addq	%rax, %rbx
 	# "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'
 	# linking both pairs [ -> ] and [ <- ]
@@ -271,41 +275,13 @@ _start:
 	incq	%r15
 	jmp	.lexer_pick
 
-.lexer_end:
-	movq	$0, %r8
-.aaa:
-	cmpq	-36(%rbp), %r8
-	je	.bbb
+.start_intp:
+	movl	-36(%rbp), %edi
+	call	interpret
 
-	movq	%r8, %rax
-	movq	.token_sz(%rip), %rbx
-	mulq	%rbx
-	leaq	.tokens(%rip), %r14
-	addq	%rax, %r14
-
-	movl	16(%r14), %eax
-	cltq
-	pushq	%rax
-	movq	0(%r14), %rax
-	movzbl	(%rax), %eax
-	cltq
-	pushq	%rax
-	movl	12(%r14), %eax
-	cltq
-	pushq	%rax
-	movl	8(%r14), %eax
-	cltq
-	pushq	%rax
-	movl	$1, %edi
-	leaq	.token_info(%rip), %rsi
-	call	fprintf_
-	popq	%rax
-	popq	%rax
-	popq	%rax
-	popq	%rax
-
-	incq	%r8
-	jmp	.aaa
-
-.bbb:
-	EXIT_	$96
+	movq	-20(%rbp), %rdi
+	movq	-12(%rbp), %rsi
+	incq	%rsi
+	movq	$11, %rax
+	syscall
+	EXIT_	$0
