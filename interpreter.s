@@ -1,15 +1,15 @@
 #               ____
 #             /____ `\
-#            ||_  _`\ \		Brainfuck interpreter
-#      .-.   `|O, O  ||		art by: TBH'99
-#      | |    (/    -)\		coded by: x13nsa
-#      | |    |`-'` |./		date: Jul 23 2015
+#            ||_  _`\ \
+#      .-.   `|O, O  ||		art by:		TBH'99
+#      | |    (/    -)\		coded by:	x13nsa
+#      | |    |`-'` |./		last update:	Jul 23 2015
 #   __/  |    | _/  |
 #  (___) \.  _.\__. `\___
 #  (___)  )\/  \    _/   ~\.
 #  (___) . \   `--  _      |
 #   (__)-    ,/        (   |
-#        `--~|         |   |	interpreter itself bonsoir
+#        `--~|         |   |	Tabs: 8
 #            |         |   |
 .section	.bss
 	.memory:	.zero	90000

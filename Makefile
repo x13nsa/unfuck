@@ -1,15 +1,15 @@
 #               ____
 #             /____ `\
-#            ||_  _`\ \		Brainfuck interpreter
-#      .-.   `|O, O  ||		art by: TBH'99
-#      | |    (/    -)\		coded by: x13nsa
-#      | |    |`-'` |./		date: Jul 23 2015
+#            ||_  _`\ \
+#      .-.   `|O, O  ||		art by:		TBH'99
+#      | |    (/    -)\		coded by:	x13nsa
+#      | |    |`-'` |./		last update:	Jul 23 2015
 #   __/  |    | _/  |
 #  (___) \.  _.\__. `\___
 #  (___)  )\/  \    _/   ~\.
 #  (___) . \   `--  _      |
 #   (__)-    ,/        (   |
-#        `--~|         |   |	Makefile
+#        `--~|         |   |	Tabs: 8
 #            |         |   |
 objs = main.o error.o fprintf.o interpreter.o
 exec = unfuck
